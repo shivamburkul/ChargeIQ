@@ -1,0 +1,29 @@
+
+[
+  { "manufacturer": "Tata", "model": "Nexon EV", "variant": "Long Range", "batteryCapacityKwh": 40.5, "rangeKm": 465, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 50, "segment": "Compact SUV" },
+  { "manufacturer": "Tata", "model": "Nexon EV", "variant": "Medium Range", "batteryCapacityKwh": 30, "rangeKm": 325, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 30, "segment": "Compact SUV" },
+  { "manufacturer": "Tata", "model": "Tiago EV", "variant": "LR", "batteryCapacityKwh": 24, "rangeKm": 315, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 26, "segment": "Hatchback" },
+  { "manufacturer": "Tata", "model": "Tigor EV", "variant": "Standard", "batteryCapacityKwh": 26, "rangeKm": 315, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 25, "segment": "Sedan" },
+  { "manufacturer": "Tata", "model": "Punch EV", "variant": "Long Range", "batteryCapacityKwh": 35, "rangeKm": 421, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 50, "segment": "Compact SUV" },
+  { "manufacturer": "MG", "model": "ZS EV", "variant": "Exclusive", "batteryCapacityKwh": 50.3, "rangeKm": 461, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 76, "segment": "SUV" },
+  { "manufacturer": "MG", "model": "Comet EV", "variant": "Standard", "batteryCapacityKwh": 17.3, "rangeKm": 230, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 20, "segment": "Micro Hatchback" },
+  { "manufacturer": "Hyundai", "model": "Kona Electric", "variant": "Premium", "batteryCapacityKwh": 39.2, "rangeKm": 452, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 50, "segment": "SUV" },
+  { "manufacturer": "Hyundai", "model": "Ioniq 5", "variant": "Long Range AWD", "batteryCapacityKwh": 72.6, "rangeKm": 631, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 175, "segment": "Crossover" },
+  { "manufacturer": "Mahindra", "model": "XUV400", "variant": "EL Long Range", "batteryCapacityKwh": 39.4, "rangeKm": 456, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 50, "segment": "SUV" },
+  { "manufacturer": "Mahindra", "model": "BE 6", "variant": "Pack Two", "batteryCapacityKwh": 79, "rangeKm": 683, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 175, "segment": "SUV Coupe" },
+  { "manufacturer": "BYD", "model": "Atto 3", "variant": "Extended Range", "batteryCapacityKwh": 60.5, "rangeKm": 521, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 88, "segment": "SUV" },
+  { "manufacturer": "BYD", "model": "Seal", "variant": "Performance", "batteryCapacityKwh": 82.5, "rangeKm": 580, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 150, "segment": "Sedan" },
+  { "manufacturer": "Kia", "model": "EV6", "variant": "GT Line AWD", "batteryCapacityKwh": 77.4, "rangeKm": 663, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 240, "segment": "Crossover" },
+  { "manufacturer": "Citroen", "model": "eC3", "variant": "Live", "batteryCapacityKwh": 29.2, "rangeKm": 320, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 30, "segment": "Hatchback" },
+  { "manufacturer": "Maruti Suzuki", "model": "eVX (e Vitara)", "variant": "Delta+", "batteryCapacityKwh": 61, "rangeKm": 500, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 150, "segment": "SUV" },
+  { "manufacturer": "Tesla", "model": "Model 3", "variant": "Long Range AWD", "batteryCapacityKwh": 79.5, "rangeKm": 629, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 250, "segment": "Sedan" },
+  { "manufacturer": "Tesla", "model": "Model Y", "variant": "Long Range AWD", "batteryCapacityKwh": 79.5, "rangeKm": 600, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 250, "segment": "SUV" },
+  { "manufacturer": "Nissan", "model": "Leaf", "variant": "e+", "batteryCapacityKwh": 59, "rangeKm": 385, "connectorTypes": ["CHAdeMO"], "maxChargingSpeedKw": 100, "segment": "Hatchback" },
+  { "manufacturer": "BMW", "model": "i4", "variant": "eDrive40", "batteryCapacityKwh": 83.9, "rangeKm": 590, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 205, "segment": "Sedan" },
+  { "manufacturer": "Mercedes-Benz", "model": "EQB", "variant": "300 4MATIC", "batteryCapacityKwh": 66.5, "rangeKm": 423, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 100, "segment": "SUV" },
+  { "manufacturer": "Volvo", "model": "XC40 Recharge", "variant": "Twin Pure Electric", "batteryCapacityKwh": 78, "rangeKm": 418, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 150, "segment": "SUV" },
+  { "manufacturer": "Renault", "model": "Kwid EV", "variant": "Concept Spec", "batteryCapacityKwh": 26.8, "rangeKm": 271, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 30, "segment": "Hatchback" },
+  { "manufacturer": "Audi", "model": "Q8 e-tron", "variant": "55 Quattro", "batteryCapacityKwh": 106, "rangeKm": 582, "connectorTypes": ["CCS2"], "maxChargingSpeedKw": 170, "segment": "SUV" }
+]
+
+

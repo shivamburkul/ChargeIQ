@@ -1,0 +1,25 @@
+# --- Dependencies ---
+node_modules/
+**/node_modules/
+
+# --- Environment & secrets (NEVER commit these) ---
+.env
+.env.*
+!.env.example
+backend/serviceAccountKey.json
+
+# --- Build output ---
+frontend/dist/
+frontend/build/
+
+# --- Generated at runtime ---
+backend/invoices/
+backend/src/invoices/
+*.log
+npm-debug.log*
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

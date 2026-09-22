@@ -1,0 +1,371 @@
+
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+html,
+body {
+  scrollbar-width: none;
+  min-height: 100%;
+  background-color: #f8fafc;
+}
+
+html.dark,
+html.dark body {
+  background-color: #0b1220;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ambient background. Layered CSS gradients are always the base layer so
+   the page never shows a blank background even if the real photo below is
+   missing - and if a real /images/light-bg.jpg / dark-bg.jpg file IS
+   present (e.g. you've copied your own photos into
+   frontend/public/images/), it draws on top of the gradient instead of
+   replacing it, since browsers simply skip a background-image layer that
+   fails to load (a 404) and paint whatever is stacked behind it. So: drop
+   your own images at those two paths any time and they'll just start
+   showing up automatically, no code changes needed; without them, the
+   gradient below is what renders. Colors match the brand palette
+   (emerald/teal) in tailwind.config.js. Blurred further at runtime in
+   App.jsx. */
+.bg-light-bg {
+  background-color: #f8fafc;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-image:
+    url('/images/light-bg.jpg'),
+    radial-gradient(circle at 12% 18%, rgba(16, 185, 129, 0.35), transparent 42%),
+    radial-gradient(circle at 85% 12%, rgba(132, 204, 22, 0.28), transparent 45%),
+    radial-gradient(circle at 78% 82%, rgba(5, 150, 105, 0.30), transparent 50%),
+    radial-gradient(circle at 15% 85%, rgba(110, 231, 183, 0.35), transparent 45%),
+    linear-gradient(135deg, #f0fdf9 0%, #f8fafc 55%, #ecfdf5 100%);
+}
+.bg-dark-bg {
+  background-color: #0b1220;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-image:
+    url('/images/dark-bg.jpg'),
+    radial-gradient(circle at 10% 15%, rgba(16, 185, 129, 0.28), transparent 45%),
+    radial-gradient(circle at 88% 20%, rgba(132, 204, 22, 0.16), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(15, 118, 110, 0.35), transparent 50%),
+    radial-gradient(circle at 18% 88%, rgba(6, 95, 70, 0.4), transparent 45%),
+    linear-gradient(135deg, #0b1220 0%, #0a1f1a 55%, #0b1220 100%);
+}
+
+body {
+  @apply bg-transparent text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300;
+  overflow-x: hidden;
+  background-image: url('/images/light-bg.jpg');
+  background-position: center;
+  background-size: cover;
+  background-attachment: scroll;
+}
+
+html.dark body {
+  background-image: url('/images/dark-bg.jpg');
+}
+
+#root {
+  min-width: 0;
+  overflow-x: hidden;
+  min-height: 100%;
+}
+
+.profile-menu {
+  background-color: rgb(255 255 255 / 0.92);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  backdrop-filter: blur(24px);
+}
+
+.dark .profile-menu {
+  background-color: rgb(11 18 32 / 0.92);
+  border-color: rgb(30 41 59 / 0.9);
+}
+
+.navbar-shell {
+  height: 4rem;
+  border-radius: 9999px;
+  transition: border-radius 320ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar-shell-open {
+  border-radius: 1.5rem;
+}
+
+/* Accordion reveal using the grid-template-rows 0fr -> 1fr trick: this
+   animates smoothly to the menu's real (intrinsic) height instead of a
+   guessed max-height, so it never looks like it "snaps" partway through. */
+.navbar-mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.5rem;
+  border-radius: 1.5rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  overflow: hidden;
+  z-index: 20;
+  background-color: #f8fafc;
+  box-shadow: 0 12px 24px rgb(15 23 42 / 0.12);
+  transition: grid-template-rows 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 220ms ease;
+}
+
+.dark .navbar-mobile-menu {
+  background-color: #0b1220;
+  box-shadow: 0 12px 24px rgb(0 0 0 / 0.28);
+}
+
+.navbar-mobile-menu-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .navbar-mobile-menu-inner {
+    background-color: #f8fafc;
+  }
+
+  .dark .navbar-mobile-menu-inner {
+    background-color: #0b1220;
+  }
+}
+
+@supports (height: 100lvh) {
+  .page-background-layer {
+    height: 100lvh;
+    min-height: 100lvh;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-shell {
+    height: 4rem;
+  }
+}
+
+.navbar-mobile-menu-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ---------- Reusable surface primitives ----------
+   Light and dark theme now use matching opacity levels (both solidly
+   legible, not "see-through" in one theme and solid in the other) - this
+   used to be e.g. bg-white/30 in light vs bg-slate-900/80 in dark, which
+   is why some boxes looked glassy-transparent in light mode and solid in
+   dark mode. */
+.card {
+  @apply bg-white/75 dark:bg-slate-900/75 backdrop-blur-lg border border-white/60 dark:border-slate-800/60 rounded-2xl shadow-md dark:shadow-sm;
+}
+
+.glass-panel {
+  @apply bg-white/65 dark:bg-slate-900/65 backdrop-blur-xl border border-white/60 dark:border-slate-700/50 rounded-2xl shadow-xl;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white/75 dark:bg-slate-800/75 hover:bg-white/90 dark:hover:bg-slate-700/90 text-slate-800 dark:text-slate-200 font-semibold px-4 py-2.5 transition-colors backdrop-blur-sm border border-slate-200/70 dark:border-transparent;
+}
+
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-100/75 dark:bg-red-900/30 hover:bg-red-200/90 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold px-4 py-2.5 transition-colors border border-red-200 dark:border-red-900/60;
+}
+
+.input-field {
+  @apply w-full rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white/[0.78] dark:bg-slate-800/[0.78] backdrop-blur-sm px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 transition text-slate-900 dark:text-slate-100 placeholder:text-slate-600 dark:placeholder:text-slate-500;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  white-space: nowrap;
+}
+
+.search-mobile-controls {
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+@media (max-width: 1023px) {
+  .search-panel-collapsible {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .search-mobile-controls {
+    display: none;
+  }
+}
+
+/* Sticky modal headers (BookingModal, StationFormModal) - matched to the
+   same opacity/blur as .card above so the header doesn't look like a
+   solid opaque bar sitting on top of a much more see-through body. */
+.modal-header {
+  @apply bg-white/[0.82] dark:bg-slate-900/[0.82] backdrop-blur-lg;
+}
+
+/* ---------- LIGHT THEME TEXT OVERRIDES ---------- */
+/* These ONLY apply when dark mode is NOT active, keeping dark theme perfect */
+:root:not(.dark) .text-slate-500 {
+  color: #334155; /* slate-700 */
+}
+:root:not(.dark) .text-slate-400 {
+  color: #475569; /* slate-600 */
+}
+:root:not(.dark) .text-slate-300 {
+  color: #64748b; /* slate-500 */
+}
+:root:not(.dark) .text-slate-200 {
+  color: #475569; /* slate-600 */
+}
+:root:not(.dark) .text-slate-600 {
+  color: #1e293b; /* slate-800 */
+}
+:root:not(.dark) .text-slate-700 {
+  color: #0f172a; /* slate-900 */
+}
+:root:not(.dark) .border-slate-200 {
+  border-color: #cbd5e1; /* slate-300 */
+}
+
+/* Keep muted text readable over the dark background image and translucent surfaces. */
+.dark .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+.dark .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+.dark .text-slate-200 {
+  color: #e2e8f0 !important;
+}
+.dark .text-slate-100 {
+  color: #f1f5f9 !important;
+}
+.dark .text-slate-500 {
+  color: #e2e8f0 !important;
+}
+.dark .text-slate-600 {
+  color: #f1f5f9 !important;
+}
+.dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+/* ---------- Leaflet map dark-mode + polish overrides ---------- */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: #dbeafe;
+}
+.dark .leaflet-container {
+  background: #0b1220;
+}
+.leaflet-control-zoom {
+  @apply !border-none !rounded-xl overflow-hidden shadow-lg;
+}
+.leaflet-control-zoom a {
+  @apply !bg-white/90 dark:!bg-slate-800/90 !text-slate-700 dark:!text-slate-200 !border-slate-200 dark:!border-slate-700;
+}
+.leaflet-control-zoom a:hover {
+  @apply !bg-slate-100/90 dark:!bg-slate-700/90;
+}
+.leaflet-popup-content-wrapper {
+  @apply !bg-white/90 dark:!bg-slate-800/90 !text-slate-800 dark:!text-slate-100 !rounded-xl !shadow-xl backdrop-blur-sm;
+}
+.leaflet-popup-tip {
+  @apply !bg-white/90 dark:!bg-slate-800/90;
+}
+.leaflet-popup-close-button {
+  @apply dark:!text-slate-400;
+}
+.leaflet-control-attribution {
+  @apply !bg-white/70 dark:!bg-slate-900/70 !text-slate-500 dark:!text-slate-400 !text-[10px] !rounded-md !px-1.5;
+}
+.leaflet-control-attribution a {
+  @apply !text-slate-500 dark:!text-slate-400;
+}
+.leaflet-bar a {
+  @apply !leading-[26px];
+}
+
+/* ---------- Motion utilities ---------- */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+.animate-float { animation: floatY 6s ease-in-out infinite; }
+
+@keyframes driftBg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-drift-bg {
+  background-size: 200% 200%;
+  animation: driftBg 14s ease infinite;
+}
+
+@keyframes ringPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+.animate-ring-pulse { animation: ringPulse 2.2s cubic-bezier(0.2,0.6,0.4,1) infinite; }
+
+/* ---------- Shimmer skeleton ---------- */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(203,213,225,0.4) 25%,
+    rgba(148,163,184,0.25) 50%,
+    rgba(203,213,225,0.4) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg,
+    rgba(51,65,85,0.5) 25%,
+    rgba(71,85,105,0.35) 50%,
+    rgba(51,65,85,0.5) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ---------- Pulse slow (for live tracking dot) ---------- */
+@keyframes pulseSlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.animate-pulse-slow { animation: pulseSlow 2s ease-in-out infinite; }
