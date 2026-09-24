@@ -79,6 +79,7 @@ export const adminApi = {
   approveStation: (id) => api.patch(`/admin/stations/${id}/approve`),
   rejectStation: (id) => api.delete(`/admin/stations/${id}/reject`),
   bookings: () => api.get('/admin/bookings'),
+  bookingInvoiceUrl: (bookingId) => `/admin/bookings/${bookingId}/invoice`,
   activity: () => api.get('/admin/activity'),
 };
 

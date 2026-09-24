@@ -336,20 +336,16 @@ async function finalizeBookingWithInvoice(booking) {
   if (existingInvoice) return existingInvoice;
 
   const { Payment } = require('../models');
-  const blockchainService = require('../services/blockchainService');
-
   const station = await Station.findByPk(booking.stationId);
   const user = await User.findByPk(booking.userId);
   const vehicle = await Vehicle.findByPk(booking.vehicleId);
   const payment = await Payment.findOne({ where: { bookingId: booking.id, status: 'success' } });
-  const block = payment ? await blockchainService.findBlockByPaymentId(payment.id) : null;
-
   const energyKwh = Number((
     ((booking.targetBatteryPercent - booking.startBatteryPercent) / 100) * vehicle.batteryCapacityKwh
   ).toFixed(2));
 
   const pdfMeta = await generateInvoicePdf({
-    booking, station, user, energyKwh, pricePerKwh: station.pricePerKwh, payment, block,
+    booking, station, user, energyKwh, pricePerKwh: station.pricePerKwh, payment,
   });
 
   const invoice = await Invoice.create({
@@ -404,26 +400,17 @@ exports.downloadInvoice = async (req, res) => {
     }
 
     const path = require('path');
-    const fs = require('fs');
     const { INVOICES_DIR } = require('../services/invoiceService');
-    let filePath = path.join(INVOICES_DIR, invoice.pdfFileName);
-
-    if (!fs.existsSync(filePath)) {
-      // The database record exists but the PDF itself is missing from disk
-      // (e.g. the invoices/ folder got cleared, or this is a fresh clone
-      // of the project without it) - regenerate the file instead of
-      // handing back a broken download.
-      const { Payment } = require('../models');
-      const blockchainService = require('../services/blockchainService');
-      const station = await Station.findByPk(booking.stationId);
-      const user = await User.findByPk(booking.userId);
-      const vehicle = await Vehicle.findByPk(booking.vehicleId);
-      const payment = await Payment.findOne({ where: { bookingId: booking.id, status: 'success' } });
-      const block = payment ? await blockchainService.findBlockByPaymentId(payment.id) : null;
-      const energyKwh = Number((((booking.targetBatteryPercent - booking.startBatteryPercent) / 100) * vehicle.batteryCapacityKwh).toFixed(2));
-      const pdfMeta = await generateInvoicePdf({ booking, station, user, energyKwh, pricePerKwh: station.pricePerKwh, payment, block });
-      filePath = path.join(INVOICES_DIR, pdfMeta.fileName);
-    }
+    const { Payment } = require('../models');
+    const station = await Station.findByPk(booking.stationId);
+    const user = await User.findByPk(booking.userId);
+    const vehicle = await Vehicle.findByPk(booking.vehicleId);
+    const payment = await Payment.findOne({ where: { bookingId: booking.id, status: 'success' } });
+    const energyKwh = Number((((booking.targetBatteryPercent - booking.startBatteryPercent) / 100) * vehicle.batteryCapacityKwh).toFixed(2));
+    const pdfMeta = await generateInvoicePdf({ booking, station, user, energyKwh, pricePerKwh: station.pricePerKwh, payment });
+    invoice.pdfFileName = pdfMeta.fileName;
+    await invoice.save();
+    const filePath = path.join(INVOICES_DIR, pdfMeta.fileName);
 
     res.download(filePath, invoice.pdfFileName, (err) => {
       if (err && !res.headersSent) {
@@ -439,5 +426,3 @@ exports.downloadInvoice = async (req, res) => {
 
 module.exports.autoExpireIfNeeded = autoExpireIfNeeded;
 module.exports.finalizeBookingWithInvoice = finalizeBookingWithInvoice;
-
-

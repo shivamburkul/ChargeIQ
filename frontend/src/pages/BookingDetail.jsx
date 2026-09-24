@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/client';
-import { bookingApi, reviewApi, paymentApi } from '../api/endpoints';
+import { bookingApi, reviewApi } from '../api/endpoints';
 import { startVisiblePolling } from '../hooks/usePolling';
 import Spinner from '../components/Spinner';
 import ChargeBar from '../components/ChargeBar';
@@ -41,7 +41,6 @@ export default function BookingDetail() {
   const [justCompleted, setJustCompleted] = useState(false);
   const [pendingPayment, setPendingPayment] = useState(null);
   const [startingPayment, setStartingPayment] = useState(false);
-  const [paymentInfo, setPaymentInfo] = useState(null);
 
   const [ratingValue, setRatingValue] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
@@ -59,9 +58,6 @@ export default function BookingDetail() {
     const res = await bookingApi.get(id);
     setBooking(res.data.booking);
     if (res.data.booking.review) setRatingSubmitted(true);
-    if (res.data.booking.status !== 'pending_payment') {
-      paymentApi.forBooking(id).then((r) => setPaymentInfo(r.data.payment)).catch(() => {});
-    }
     setLoading(false);
   }
 
@@ -244,18 +240,6 @@ export default function BookingDetail() {
             <button onClick={startPayment} disabled={startingPayment} className="btn-primary w-full">
               {startingPayment ? <Spinner size={18} className="text-white" /> : `💳 Pay ₹${booking.estimatedCost} now`}
             </button>
-          </div>
-        )}
-
-        {paymentInfo && (
-          <div className="mt-5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-4">
-            <p className="text-sm font-semibold mb-2">🔗 Payment & blockchain record</p>
-            <div className="text-xs text-slate-500 space-y-1">
-              <p>Transaction ID: <span className="font-mono text-slate-700 dark:text-slate-300">{paymentInfo.transactionId}</span></p>
-              <p>Paid with: {paymentInfo.cardBrand} {paymentInfo.maskedCard}</p>
-              <p>Ledger block: <span className="font-mono text-slate-700 dark:text-slate-300">#{paymentInfo.blockIndex}</span></p>
-              <p className="truncate">Block hash: <span className="font-mono text-slate-700 dark:text-slate-300">{paymentInfo.blockHash}</span></p>
-            </div>
           </div>
         )}
 

@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { adminApi, blockchainApi } from '../api/endpoints';
+import api from '../api/client';
 import { startVisiblePolling } from '../hooks/usePolling';
 import Spinner from '../components/Spinner';
 import FadeIn from '../components/FadeIn';
@@ -19,6 +20,7 @@ export default function AdminDashboard() {
   const [verifying, setVerifying] = useState(false);
   const [ledgerStatus, setLedgerStatus] = useState(null);
   const [pendingOnly, setPendingOnly] = useState(false);
+  const [printingId, setPrintingId] = useState(null);
   const pollRef = useRef(null);
 
   async function verifyLedger() {
@@ -87,6 +89,21 @@ export default function AdminDashboard() {
     await adminApi.rejectStation(id);
     setStations((current) => current.filter((station) => station.id !== id));
     setPendingOnly(false);
+  }
+
+  async function printReceipt(bookingId) {
+    setPrintingId(bookingId);
+    try {
+      const res = await api.get(adminApi.bookingInvoiceUrl(bookingId), { responseType: 'blob' });
+      const blobUrl = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const win = window.open(blobUrl, '_blank');
+      if (win) setTimeout(() => win.print && win.print(), 600);
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 30000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Receipt not available yet for this booking.');
+    } finally {
+      setPrintingId(null);
+    }
   }
 
   if (loading) return <div className="py-24 flex justify-center"><Spinner size={32} /></div>;
@@ -316,7 +333,7 @@ export default function AdminDashboard() {
           >
             <table className="w-full text-sm min-w-[600px]">
               <thead><tr className="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500">
-                <th className="p-3 whitespace-nowrap">Driver</th><th className="p-3 whitespace-nowrap">Station</th><th className="p-3 whitespace-nowrap">Slot</th><th className="p-3 whitespace-nowrap">Status</th><th className="p-3 whitespace-nowrap">Cost</th>
+                <th className="p-3 whitespace-nowrap">Driver</th><th className="p-3 whitespace-nowrap">Station</th><th className="p-3 whitespace-nowrap">Slot</th><th className="p-3 whitespace-nowrap">Status</th><th className="p-3 whitespace-nowrap">Cost</th><th className="p-3"></th>
               </tr></thead>
               <tbody>
                 {bookings.map((b, i) => (
@@ -332,6 +349,13 @@ export default function AdminDashboard() {
                     <td className="p-3 whitespace-nowrap">{new Date(b.slotStart).toLocaleString()}</td>
                     <td className="p-3 capitalize whitespace-nowrap">{b.status.replace('_', ' ')}</td>
                     <td className="p-3 whitespace-nowrap">₹{b.estimatedCost}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      {b.status === 'completed' && (
+                        <button onClick={() => printReceipt(b.id)} disabled={printingId === b.id} className="text-brand-600 text-xs font-medium whitespace-nowrap">
+                          {printingId === b.id ? '...' : '🖨️ Print receipt'}
+                        </button>
+                      )}
+                    </td>
                   </motion.tr>
                 ))}
               </tbody>

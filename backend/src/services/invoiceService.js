@@ -16,7 +16,7 @@ function generateInvoiceNumber(bookingId) {
 /**
  * Generates a PDF invoice on disk and returns metadata for saving to DB.
  */
-async function generateInvoicePdf({ booking, station, user, energyKwh, pricePerKwh, payment, block }) {
+async function generateInvoicePdf({ booking, station, user, energyKwh, pricePerKwh, payment, block, includeBlockchain = false }) {
   const subtotal = Number((energyKwh * pricePerKwh).toFixed(2));
   const taxAmount = Number((subtotal * TAX_RATE).toFixed(2));
   const total = Number((subtotal + taxAmount).toFixed(2));
@@ -84,9 +84,10 @@ async function generateInvoicePdf({ booking, station, user, energyKwh, pricePerK
   if (payment) {
     doc.moveDown(1.2);
     const recordTop = doc.y;
-    doc.roundedRect(50, recordTop, 495, block ? 116 : 70, 8)
+    const recordHeight = includeBlockchain && block ? 132 : 86;
+    doc.roundedRect(50, recordTop, 495, recordHeight, 8)
       .fillAndStroke('#f0fdfa', '#99f6e4');
-    doc.fontSize(13).fillColor('#0f766e').text('Payment & Blockchain Record', 64, recordTop + 12);
+    doc.fontSize(13).fillColor('#0f766e').text(includeBlockchain && block ? 'Payment & Blockchain Record' : 'Payment Details', 64, recordTop + 12);
     doc.fontSize(9.5).fillColor('#111');
     doc.text('Payment gateway', 64, recordTop + 36);
     doc.text(`${payment.gateway || 'ChargeIQ DemoPay'} (demo)`, 220, recordTop + 36, { width: 300 });
@@ -94,18 +95,20 @@ async function generateInvoicePdf({ booking, station, user, energyKwh, pricePerK
     doc.text(`${payment.cardBrand || ''} ${payment.maskedCard || ''}`, 220, recordTop + 52, { width: 300 });
     doc.text('Transaction ID', 64, recordTop + 68);
     doc.text(payment.transactionId || 'N/A', 220, recordTop + 68, { width: 300 });
-    if (block) {
+    if (includeBlockchain && block) {
       doc.text('Ledger block', 64, recordTop + 84);
       doc.text(`#${block.index}`, 220, recordTop + 84, { width: 300 });
       doc.text('Block hash', 64, recordTop + 100);
-      doc.text(String(block.hash || '').slice(0, 28), 220, recordTop + 100, { width: 300 });
+      doc.fontSize(8).text(String(block.hash || 'N/A'), 220, recordTop + 100, { width: 300 });
     }
-    doc.y = recordTop + (block ? 116 : 70);
+    doc.y = recordTop + recordHeight;
   }
 
   doc.moveDown(1);
   doc.fontSize(9).fillColor('#888').text(
-    'This is a system-generated invoice for your charging session. Payment and blockchain details above are recorded by a simulated demo gateway/ledger built for this academic project - no real currency was transferred.',
+    includeBlockchain
+      ? 'This is a system-generated invoice for your charging session. Payment and blockchain details above are recorded by a simulated demo gateway/ledger built for this academic project - no real currency was transferred.'
+      : 'This is a system-generated invoice for your charging session. No real currency was transferred.',
     50, doc.y, { width: 495, align: 'center' }
   );
 
@@ -120,4 +123,3 @@ async function generateInvoicePdf({ booking, station, user, energyKwh, pricePerK
 }
 
 module.exports = { generateInvoicePdf, INVOICES_DIR };
-

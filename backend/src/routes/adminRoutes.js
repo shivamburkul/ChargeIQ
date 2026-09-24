@@ -13,7 +13,7 @@ router.patch('/stations/:id/toggle', ctrl.deactivateStation);
 router.patch('/stations/:id/approve', ctrl.approveStation);
 router.delete('/stations/:id/reject', ctrl.rejectStation);
 router.get('/bookings', ctrl.listAllBookings);
+router.get('/bookings/:bookingId/invoice', ctrl.downloadBookingInvoice);
 router.get('/activity', ctrl.recentActivity);
 
 module.exports = router;
-

@@ -8,7 +8,6 @@ import Spinner from './Spinner';
 const PROCESSING_STEPS = [
   'Contacting ChargeIQ DemoPay…',
   'Validating card details…',
-  'Mining blockchain block…',
   'Finalizing transaction…',
 ];
 
@@ -53,9 +52,7 @@ export default function PaymentModal({ payment, onClose, onSuccess }) {
     if (!/^\d{3,4}$/.test(form.cvv)) return setError('Enter a valid CVV.');
 
     setStep('processing');
-    // Purely cosmetic staged messages so the "gateway → blockchain" flow is
-    // visible to whoever's demoing the project, matching how real
-    // checkout flows show a multi-step spinner.
+    // Purely cosmetic staged messages matching a typical checkout flow.
     PROCESSING_STEPS.forEach((label, i) => {
       setTimeout(() => setProcessingLabel(label), i * 550);
     });
@@ -149,7 +146,6 @@ export default function PaymentModal({ payment, onClose, onSuccess }) {
               <div className="text-5xl mb-2">✅</div>
               <h3 className="font-display text-lg font-bold text-brand-600">Payment successful</h3>
               <p className="text-sm text-slate-500 mt-1">Transaction {result?.payment?.transactionId}</p>
-              <p className="text-xs text-slate-400 mt-1">Recorded on blockchain · block #{result?.block?.index}</p>
             </motion.div>
           )}
 

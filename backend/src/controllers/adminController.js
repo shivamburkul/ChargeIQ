@@ -1,11 +1,12 @@
 
-const { User, Booking } = require('../models');
+const { User, Booking, Station, Vehicle, Payment } = require('../models');
 const stationCache = require('../services/stationCache');
 const { getDb } = require('../config/firebase');
 const Op = require('../utils/op');
 const ttlCache = require('../utils/ttlCache');
 const blockchainService = require('../services/blockchainService');
 const { deleteAccount } = require('../services/accountDeletionService');
+const { generateInvoicePdf } = require('../services/invoiceService');
 
 // Internal source tags (how a station entered the system) mapped to a
 // clean, presentable label - admins should see "how was this listed"
@@ -176,6 +177,37 @@ exports.listAllBookings = async (req, res) => {
     }));
   });
   res.json({ bookings });
+};
+
+exports.downloadBookingInvoice = async (req, res) => {
+  try {
+    const booking = await Booking.findByPk(Number(req.params.bookingId));
+    if (!booking) return res.status(404).json({ message: 'Booking not found.' });
+    if (booking.status !== 'completed') {
+      return res.status(404).json({ message: 'Invoice not yet available - this session has not finished yet.' });
+    }
+
+    const station = stationCache.getById(booking.stationId) || await Station.findByPk(booking.stationId);
+    const user = await User.findByPk(booking.userId);
+    const vehicle = await Vehicle.findByPk(booking.vehicleId);
+    const payment = await Payment.findOne({ where: { bookingId: booking.id, status: 'success' } });
+    const block = payment ? await blockchainService.findBlockByPaymentId(payment.id) : null;
+    if (!station || !user || !vehicle) return res.status(404).json({ message: 'Booking details are incomplete.' });
+
+    const energyKwh = Number((((booking.targetBatteryPercent - booking.startBatteryPercent) / 100) * vehicle.batteryCapacityKwh).toFixed(2));
+    const pdfMeta = await generateInvoicePdf({
+      booking, station, user, energyKwh, pricePerKwh: station.pricePerKwh, payment, block, includeBlockchain: true,
+    });
+    res.download(pdfMeta.filePath, pdfMeta.fileName, (err) => {
+      if (err && !res.headersSent) {
+        res.status(500).json({ message: 'Could not send the invoice file.', error: err.message });
+      }
+    });
+  } catch (err) {
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Could not generate the admin invoice.', error: err.message });
+    }
+  }
 };
 
 exports.recentActivity = async (req, res) => {

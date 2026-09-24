@@ -6,6 +6,7 @@ const { recommendStations } = require('../services/recommendationService');
 const { parseQuery } = require('../services/nlpSearchService');
 const { distanceKm } = require('../utils/geo');
 const ttlCache = require('../utils/ttlCache');
+const { generateInvoicePdf, INVOICES_DIR } = require('../services/invoiceService');
 
 function textIncludes(haystack, needle) {
   return (haystack || '').toLowerCase().includes((needle || '').toLowerCase());
@@ -244,8 +245,6 @@ exports.ownerDownloadInvoice = async (req, res) => {
   try {
     const { Invoice } = require('../models');
     const path = require('path');
-    const fs = require('fs');
-    const { INVOICES_DIR } = require('../services/invoiceService');
     const { finalizeBookingWithInvoice } = require('./bookingController');
 
     const stationIds = stationCache.getAll().filter((s) => s.ownerId === req.user.id).map((s) => s.id);
@@ -264,10 +263,16 @@ exports.ownerDownloadInvoice = async (req, res) => {
       invoice = await finalizeBookingWithInvoice(booking);
     }
 
-    const filePath = path.join(INVOICES_DIR, invoice.pdfFileName);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'The invoice file is missing on the server. Please ask the driver to re-download theirs, which will regenerate it.' });
-    }
+    const { Payment, Vehicle } = require('../models');
+    const station = stationCache.getById(booking.stationId);
+    const user = await User.findByPk(booking.userId);
+    const vehicle = await Vehicle.findByPk(booking.vehicleId);
+    const payment = await Payment.findOne({ where: { bookingId: booking.id, status: 'success' } });
+    const energyKwh = Number((((booking.targetBatteryPercent - booking.startBatteryPercent) / 100) * vehicle.batteryCapacityKwh).toFixed(2));
+    const pdfMeta = await generateInvoicePdf({ booking, station, user, energyKwh, pricePerKwh: station.pricePerKwh, payment });
+    invoice.pdfFileName = pdfMeta.fileName;
+    await invoice.save();
+    const filePath = path.join(INVOICES_DIR, pdfMeta.fileName);
 
     res.download(filePath, invoice.pdfFileName, (err) => {
       if (err && !res.headersSent) {
@@ -337,4 +342,3 @@ exports.stationAnalytics = async (req, res) => {
 
   res.json(analytics);
 };
-
